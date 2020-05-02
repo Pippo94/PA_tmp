@@ -16,11 +16,11 @@ class Field:
         return v
 
 
-# field generation (heatmap)
+# Field generation (heatmap)
 
 ns = 13  # number of spots
-xy_min = [0, 0]  # lower field boundaries
-xy_max = [20, 20]  # upper field boundaries
+xy_min = [0, 0]  # lower Field boundaries
+xy_max = [20, 20]  # upper Field boundaries
 
 x = np.linspace(xy_min[0], xy_max[0], 100)
 y = np.linspace(xy_min[1], xy_max[1], 100)
@@ -33,14 +33,16 @@ for i in range(len(y)):
         field_arr[i, j] = hmap.v(x[j], y[i])
 
 # measurements
-m = 24  # number of measurements
+m = 30  # number of measurements
 sig = 0.00005    # noise variance of measurements.
 
 p = np.random.uniform(low=xy_min, high=xy_max, size=(m, 2))  # random measurement locations p
-ym = np.zeros((m, 1))
+y = np.zeros((m, 1))
+ym = np.zeros((m,1))
 
 for i in range(m):  # measurement values with noise
-    ym[i] = hmap.v(p[i, 0], p[i, 1]) + sig*np.random.randn()
+    y[i] = hmap.v(p[i, 0], p[i, 1])
+ym = y + sig*np.random.randn(m, 1)
 
 # build Q matrix for GMRF
 nx = 50
@@ -86,6 +88,11 @@ w = xs[1] - xs[0]
 l = ys[1] - ys[0]
 
 for i in range(m):
+    if ind_x[i] == 0:
+        ind_x[i] = 1
+    if ind_y[i] == 0:
+        ind_y[i] = 1
+
     M[i, V[ind_y[i] - 1, ind_x[i] - 1]] = np.linalg.norm(xs[ind_x[i] - 1] - p[i, 0]) * np.linalg.norm(
         ys[ind_y[i] - 1] - p[i, 1]) / (w * l)  # for phi s1
     M[i, V[ind_y[i] - 1, ind_x[i]]] = np.linalg.norm(xs[ind_x[i]] - p[i, 0]) * np.linalg.norm(
@@ -103,14 +110,23 @@ mu_MRF = np.dot(Qinv, np.dot(M.T, np.dot(np.linalg.inv(sig*np.eye(m) + np.dot(M,
 
 mu_matrix = mu_MRF.reshape(ny, nx)
 
+# Field metric
+metric = y - np.dot(M, mu_MRF)
+
 plt.figure(1)
 #plt.imshow(field_arr, cmap='viridis')
 plt.imshow(field_arr, extent=(np.amin(xs), np.amax(xs), np.amin(ys), np.amax(ys)), aspect='auto')
 plt.scatter(p[:, 0], p[:, 1])
 plt.colorbar()
+
 plt.figure(2)
 plt.imshow(mu_matrix, extent=(np.amin(xs), np.amax(xs), np.amin(ys), np.amax(ys)), aspect='auto')
 plt.scatter(p[:, 0], p[:, 1])
 #plt.imshow(mu_matrix, cmap='viridis')
 plt.colorbar()
+
+plt.figure(3)
+plt.plot(range(len(metric)), metric)
+plt.plot(range(len(metric)), sig*np.ones(len(metric)))
+plt.plot(range(len(metric)), metric.std()*np.ones(len(metric)))
 plt.show()

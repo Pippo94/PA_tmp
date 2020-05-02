@@ -11,13 +11,13 @@ def kernel(a, b):  # kernel for GF, note that GMRF is based on Matern kernel
     return np.exp(-.5 * (1 / dist) * sqdist)
 
 
-# field to explore
+# Field to explore
 field = lambda x: 2*np.sin(0.5*x)+0.2*np.sin(2.5*x)
 
 
-N = 10         # number of training/measurement points.
-n = 500         # number of test/field points.
-sig = 0.005    # noise variance of measurements.
+N = 12         # number of training/measurement points.
+n = 500         # number of test/Field points.
+sig = 0.00005    # noise variance of measurements.
 
 # Gaussian Field Regression
 X_training = np.linspace(-5, 5, N).reshape(-1, 1)  # N random testpoints

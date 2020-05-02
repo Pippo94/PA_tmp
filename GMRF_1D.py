@@ -10,13 +10,13 @@ def kernel(a, b):  # kernel for GF, note that GMRF is based on Matern kernel
     return np.exp(-.5 * (1 / dist) * sqdist)
 
 
-# field to explore
+# Field to explore
 field = lambda x: 2*np.sin(0.5*x)+0.2*np.sin(2.5*x)
 
 
-N = 30       # number of training/measurement points.
-n = 500         # number of test/field points.
-sig = 0.005    # noise variance of measurements.
+N = 14       # number of training/measurement points.
+n = 500         # number of test/Field points.
+sig = 0.00005    # noise variance of measurements.
 
 # Gaussian Field Regression
 X_training = np.random.uniform(-5, 5, size=(N, 1))  # N random testpoints
@@ -39,7 +39,7 @@ sq = np.sqrt(np.diag(Sigma_GF)).reshape(-1, 1)
 
 
 # GMRF
-N_MRF = 40
+N_MRF = 30
 s = np.linspace(-5, 5, N_MRF)  # GMRF grid points
 p = X_training  # measurement points, same as GF
 a = 2  # Precision Qii
@@ -64,11 +64,11 @@ mu_MRF = np.dot(Qinv, np.dot(M.T, np.dot(np.linalg.inv(sig*np.eye(N) + np.dot(M,
 # plot one draw GPR
 pl.figure(1)
 pl.plot(X_test, mu_GF)
-pl.plot(X_training, field(X_training), 'rx')
+pl.plot(X_training, field(X_training), 'ro')
 pl.plot(s, mu_MRF, 'kx')
 pl.plot(X_test, field(X_test), '--r')
 pl.gca().fill_between(X_test.flat, (mu_GF-3*sq).flat, (mu_GF+3*sq).flat, color="#dddddd")
-pl.title('one draw GPR')
+pl.title('GPR / GMRF')
 pl.axis([-5, 5, -3, 3])
 pl.savefig('gpr1.png', bbox_inches='tight')
 
